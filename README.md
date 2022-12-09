@@ -1,0 +1,12 @@
+- [x] params matching
+- [x] lazy loading
+- [x] data loading
+- [x] loading component
+- [x] query params
+- [ ] route pre-conditions
+- [x] hash handling
+- [ ] navigation canceling
+- [ ] navigation events
+- [ ] programatic navigation
+- [ ] nested routing
+- [ ] hash based routing
