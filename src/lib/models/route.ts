@@ -7,6 +7,7 @@ type SyncRoute = {
   loadData?: LoadData;
   loadingComponent?: ConstructorOfATypedSvelteComponent;
   conditions?: RoutePreCondition | RoutePreCondition[];
+  errorComponent?: ConstructorOfATypedSvelteComponent;
 };
 
 type AsyncRoute = {
@@ -16,6 +17,7 @@ type AsyncRoute = {
   }>;
   loadingComponent?: ConstructorOfATypedSvelteComponent;
   conditions?: RoutePreCondition | RoutePreCondition[];
+  errorComponent?: ConstructorOfATypedSvelteComponent;
 };
 
 export type NavigationParams = {
@@ -30,7 +32,11 @@ export type RoutePreCondition =
 export type Routes = Record<string, Route>;
 
 export type PathMatcher = { pattern: RegExp; keys: string[] };
-export type RoutesPatterns = { pathMatcher: PathMatcher; route: Route }[];
+export type RoutesPatterns = {
+  pathMatcher: PathMatcher;
+  route: Route;
+  path: string;
+}[];
 
 export function isSyncRoute(route: Route): route is SyncRoute {
   // @ts-ignore

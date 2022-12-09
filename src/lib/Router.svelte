@@ -1,5 +1,6 @@
 <script lang="ts">
   import { parse } from "regexparam";
+  import { getContext, setContext } from "svelte";
   import { checkConditions } from "./conditions";
   import { location } from "./location";
   import type { Params } from "./models/params";
@@ -11,29 +12,48 @@
   } from "./models/route";
   import { replace } from "./navigation";
   import { extractParamsFromPath } from "./params";
+  import { createReference, type Reference } from "./reference";
 
   export let routes: Routes;
 
+  const prefixReference = getContext<Reference<string> | undefined>("prefix");
+
   let component: ConstructorOfATypedSvelteComponent | null = null;
   let loadingComponent: ConstructorOfATypedSvelteComponent | null = null;
+  let errorComponent: ConstructorOfATypedSvelteComponent | null = null;
   let data: unknown;
   let params: Params;
 
-  let routePatterns: RoutesPatterns;
+  const prefixForChildrenReference = createReference("");
+  setContext("prefix", prefixForChildrenReference);
 
-  $: routePatterns = Object.entries(routes).map(([path, route]) => {
-    const pathMatcher = parse(path);
-    return { pathMatcher, route };
-  });
+  const routePatterns: RoutesPatterns = Object.entries(routes).map(
+    ([path, route]) => {
+      const prefix = prefixReference !== undefined ? prefixReference.get() : "";
+      const prefixedPath = prefix + path;
+      const pathMatcher = parse(prefixedPath);
+      return { pathMatcher, route, path: prefixedPath };
+    }
+  );
 
-  $: handleMatchedRoute(routePatterns, $location);
+  $: handleMatchedRoute($location);
 
-  async function handleMatchedRoute(routes: RoutesPatterns, location: string) {
-    const matchedRoute = routes.find((route) =>
+  async function handleMatchedRoute(location: string) {
+    errorComponent = null;
+    loadingComponent = null;
+
+    const matchedRoute = routePatterns.find((route) =>
       route.pathMatcher.pattern.test(location)
     );
 
     if (matchedRoute === undefined) return;
+
+    prefixForChildrenReference.set(
+      matchedRoute.path.endsWith("/*")
+        ? matchedRoute.path.slice(0, -2)
+        : matchedRoute.path
+    );
+
     params = extractParamsFromPath(location, matchedRoute.pathMatcher);
 
     if (isSyncRoute(matchedRoute.route)) {
@@ -42,29 +62,36 @@
         loadData,
         loadingComponent: matchedLoadingComponent,
         conditions,
+        errorComponent: matchedErrorComponent,
       } = matchedRoute.route;
 
       if (matchedLoadingComponent !== undefined)
         loadingComponent = matchedLoadingComponent;
 
-      if (conditions !== undefined) {
-        const conditionsResult = await checkConditions(conditions);
+      try {
+        if (conditions !== undefined) {
+          const conditionsResult = await checkConditions(conditions);
 
-        if (typeof conditionsResult !== "boolean") {
-          loadingComponent = null;
-          replace(conditionsResult.path, conditionsResult.options);
-          return;
+          if (typeof conditionsResult !== "boolean") {
+            loadingComponent = null;
+            replace(conditionsResult.path, conditionsResult.options);
+            return;
+          }
+
+          if (!conditionsResult) return;
         }
 
-        if (!conditionsResult) return;
+        component = matchedComponent;
+        if (loadData === undefined) return;
+
+        data = await loadData(params);
+        loadingComponent = null;
+        return;
+      } catch (error) {
+        if (matchedErrorComponent !== undefined)
+          errorComponent = matchedErrorComponent;
+        return;
       }
-
-      component = matchedComponent;
-      if (loadData === undefined) return;
-
-      data = await loadData(params);
-      loadingComponent = null;
-      return;
     }
 
     if (isAsyncRoute(matchedRoute.route)) {
@@ -72,42 +99,51 @@
         asyncComponent,
         loadingComponent: matchedLoadingComponent,
         conditions,
+        errorComponent: matchedErrorComponent,
       } = matchedRoute.route;
 
       if (matchedLoadingComponent !== undefined)
         loadingComponent = matchedLoadingComponent;
 
-      if (conditions !== undefined) {
-        const conditionsResult = await checkConditions(conditions);
+      try {
+        if (conditions !== undefined) {
+          const conditionsResult = await checkConditions(conditions);
 
-        if (typeof conditionsResult !== "boolean") {
-          loadingComponent = null;
-          replace(conditionsResult.path, conditionsResult.options);
+          if (typeof conditionsResult !== "boolean") {
+            loadingComponent = null;
+            replace(conditionsResult.path, conditionsResult.options);
+            return;
+          }
+
+          if (!conditionsResult) return;
+        }
+
+        const { default: matchedComponent, loadData } = await asyncComponent();
+
+        if (loadData === undefined) {
+          component = matchedComponent;
           return;
         }
 
-        if (!conditionsResult) return;
-      }
-
-      const { default: matchedComponent, loadData } = await asyncComponent();
-
-      if (loadData === undefined) {
+        data = await loadData(params);
         component = matchedComponent;
+        loadingComponent = null;
+
+        return;
+      } catch (error) {
+        if (matchedErrorComponent !== undefined)
+          errorComponent = matchedErrorComponent;
         return;
       }
-
-      data = await loadData(params);
-      component = matchedComponent;
-      loadingComponent = null;
-
-      return;
     }
 
     component = matchedRoute.route;
   }
 </script>
 
-{#if loadingComponent}
+{#if errorComponent}
+  <svelte:component this={errorComponent} />
+{:else if loadingComponent}
   <svelte:component this={loadingComponent} />
 {:else}
   <svelte:component this={component} {data} {params} />

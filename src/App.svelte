@@ -5,19 +5,13 @@
   import { back, forward } from "./lib/navigation";
   import Router from "./lib/Router.svelte";
   import About from "./routes/About.svelte";
+  import Error from "./routes/Error.svelte";
   import Home from "./routes/Home.svelte";
   import Login from "./routes/Login.svelte";
   import PostsOverview, {
     loadData as loadPosts,
   } from "./routes/PostsOverview.svelte";
-
-  function waitfor2Seconds() {
-    return new Promise(function (resolve, reject) {
-      setTimeout(resolve, 2000);
-    }).then(function () {
-      console.log("Wrapped setTimeout after 2000ms");
-    });
-  }
+  import { waitfor2Seconds } from "./utils/wait";
 
   const routes: Routes = {
     "/": Home,
@@ -39,6 +33,20 @@
         },
       ],
     },
+    "/users": {
+      asyncComponent: () => import("./routes/UsersOverview.svelte"),
+    },
+    "/users/:userId": {
+      asyncComponent: () => import("./routes/User.svelte"),
+    },
+    "/users/:userId/*": {
+      asyncComponent: () => import("./routes/User.svelte"),
+    },
+    "/pictures": {
+      asyncComponent: () => import("./routes/Pictures.svelte"),
+      loadingComponent: Loading,
+      errorComponent: Error,
+    },
   };
 </script>
 
@@ -52,6 +60,8 @@
     <li><a href="/" use:link>Home</a></li>
     <li><a href="/about" use:link>About</a></li>
     <li><a href="/posts" use:link>Posts</a></li>
+    <li><a href="/users" use:link>Users</a></li>
+    <li><a href="/pictures" use:link>Pictures with error</a></li>
     <li><a href="https://www.google.com" use:link>Google</a></li>
   </ul>
 </nav>

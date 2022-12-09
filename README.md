@@ -7,5 +7,8 @@
 - [x] hash handling
 - [ ] navigation events
 - [x] programatic navigation
-- [ ] nested routing
+- [x] nested routing
+- [ ] error handling
 - [ ] hash based routing
+- [ ] fallback route
+- [ ] documentation
