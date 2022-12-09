@@ -1,18 +1,28 @@
 <script lang="ts">
   import Loading from "./components/Loading.svelte";
   import { link } from "./lib/links";
-  import { queryParams } from "./lib/location";
   import type { Routes } from "./lib/models/route";
+  import { back, forward } from "./lib/navigation";
   import Router from "./lib/Router.svelte";
   import About from "./routes/About.svelte";
   import Home from "./routes/Home.svelte";
+  import Login from "./routes/Login.svelte";
   import PostsOverview, {
     loadData as loadPosts,
   } from "./routes/PostsOverview.svelte";
 
+  function waitfor2Seconds() {
+    return new Promise(function (resolve, reject) {
+      setTimeout(resolve, 2000);
+    }).then(function () {
+      console.log("Wrapped setTimeout after 2000ms");
+    });
+  }
+
   const routes: Routes = {
     "/": Home,
     "/about": About,
+    "/login": Login,
     "/posts": {
       component: PostsOverview,
       loadData: loadPosts,
@@ -21,11 +31,21 @@
     "/posts/:id": {
       asyncComponent: () => import("./routes/Post.svelte"),
       loadingComponent: Loading,
+      conditions: [
+        () => true,
+        async () => {
+          await waitfor2Seconds();
+          return { path: "/login" };
+        },
+      ],
     },
   };
 </script>
 
 <h1>Svelte tourer</h1>
+
+<button on:click={back}>Back</button>
+<button on:click={forward}>Forward</button>
 
 <nav>
   <ul>

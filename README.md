@@ -3,10 +3,9 @@
 - [x] data loading
 - [x] loading component
 - [x] query params
-- [ ] route pre-conditions
+- [x] route pre-conditions
 - [x] hash handling
-- [ ] navigation canceling
 - [ ] navigation events
-- [ ] programatic navigation
+- [x] programatic navigation
 - [ ] nested routing
 - [ ] hash based routing

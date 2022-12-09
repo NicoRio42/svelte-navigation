@@ -1,5 +1,6 @@
 <script lang="ts">
   import { parse } from "regexparam";
+  import { checkConditions } from "./conditions";
   import { location } from "./location";
   import type { Params } from "./models/params";
   import {
@@ -8,6 +9,7 @@
     type Routes,
     type RoutesPatterns,
   } from "./models/route";
+  import { replace } from "./navigation";
   import { extractParamsFromPath } from "./params";
 
   export let routes: Routes;
@@ -39,13 +41,26 @@
         component: matchedComponent,
         loadData,
         loadingComponent: matchedLoadingComponent,
+        conditions,
       } = matchedRoute.route;
-
-      component = matchedComponent;
-      if (loadData === undefined) return;
 
       if (matchedLoadingComponent !== undefined)
         loadingComponent = matchedLoadingComponent;
+
+      if (conditions !== undefined) {
+        const conditionsResult = await checkConditions(conditions);
+
+        if (typeof conditionsResult !== "boolean") {
+          loadingComponent = null;
+          replace(conditionsResult.path, conditionsResult.options);
+          return;
+        }
+
+        if (!conditionsResult) return;
+      }
+
+      component = matchedComponent;
+      if (loadData === undefined) return;
 
       data = await loadData(params);
       loadingComponent = null;
@@ -53,11 +68,26 @@
     }
 
     if (isAsyncRoute(matchedRoute.route)) {
-      const { asyncComponent, loadingComponent: matchedLoadingComponent } =
-        matchedRoute.route;
+      const {
+        asyncComponent,
+        loadingComponent: matchedLoadingComponent,
+        conditions,
+      } = matchedRoute.route;
 
       if (matchedLoadingComponent !== undefined)
         loadingComponent = matchedLoadingComponent;
+
+      if (conditions !== undefined) {
+        const conditionsResult = await checkConditions(conditions);
+
+        if (typeof conditionsResult !== "boolean") {
+          loadingComponent = null;
+          replace(conditionsResult.path, conditionsResult.options);
+          return;
+        }
+
+        if (!conditionsResult) return;
+      }
 
       const { default: matchedComponent, loadData } = await asyncComponent();
 

@@ -18,7 +18,14 @@ type AsyncRoute = {
   conditions?: RoutePreCondition | RoutePreCondition[];
 };
 
-export type RoutePreCondition = (() => boolean) | (() => Promise<boolean>);
+export type NavigationParams = {
+  path: string;
+  options?: { queryParams?: Record<string, string>; hash?: string };
+};
+
+export type RoutePreCondition =
+  | (() => boolean | NavigationParams)
+  | (() => Promise<boolean | NavigationParams>);
 
 export type Routes = Record<string, Route>;
 
@@ -33,4 +40,11 @@ export function isSyncRoute(route: Route): route is SyncRoute {
 export function isAsyncRoute(route: Route): route is AsyncRoute {
   // @ts-ignore
   return route["asyncComponent"] !== undefined;
+}
+
+export function isNavigationParams(
+  params: Promise<boolean | NavigationParams> | NavigationParams
+): params is NavigationParams {
+  // @ts-ignore
+  return params["path"] !== undefined;
 }
