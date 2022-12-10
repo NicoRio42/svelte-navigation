@@ -1,5 +1,6 @@
 <script lang="ts">
   import Loading from "./components/Loading.svelte";
+  import { getConfig } from "./lib/config";
   import { link } from "./lib/links";
   import type { Routes } from "./lib/models/route";
   import { back, forward } from "./lib/navigation";
@@ -57,12 +58,21 @@
 
 <nav>
   <ul>
-    <li><a href="/" use:link>Home</a></li>
-    <li><a href="/about" use:link>About</a></li>
-    <li><a href="/posts" use:link>Posts</a></li>
-    <li><a href="/users" use:link>Users</a></li>
-    <li><a href="/pictures" use:link>Pictures with error</a></li>
-    <li><a href="https://www.google.com" use:link>Google</a></li>
+    {#if getConfig().hashMode}
+      <li><a href="#/">Home</a></li>
+      <li><a href="#/about">About</a></li>
+      <li><a href="#/posts">Posts</a></li>
+      <li><a href="#/users">Users</a></li>
+      <li><a href="#/pictures">Pictures with error</a></li>
+      <li><a href="https://www.google.com">Google</a></li>
+    {:else}
+      <li><a href="/" use:link>Home</a></li>
+      <li><a href="/about" use:link>About</a></li>
+      <li><a href="/posts" use:link>Posts</a></li>
+      <li><a href="/users" use:link>Users</a></li>
+      <li><a href="/pictures" use:link>Pictures with error</a></li>
+      <li><a href="https://www.google.com">Google</a></li>
+    {/if}
   </ul>
 </nav>
 

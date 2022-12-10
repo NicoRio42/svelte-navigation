@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+  import { getConfig } from "../lib/config";
   import { link } from "../lib/links";
 
   import type { Post } from "../models/post";
@@ -16,5 +17,9 @@
 <h1>Posts</h1>
 
 {#each data as post}
-  <a href="/posts/{post.id}" use:link>{post.title}</a>
+  {#if getConfig().hashMode}
+    <a href="#/posts/{post.id}">{post.title}</a>
+  {:else}
+    <a href="/posts/{post.id}" use:link>{post.title}</a>
+  {/if}
 {/each}

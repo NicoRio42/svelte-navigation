@@ -1,6 +1,6 @@
 <script lang="ts">
   import { parse } from "regexparam";
-  import { getContext, setContext } from "svelte";
+  import { createEventDispatcher, getContext, setContext } from "svelte";
   import { checkConditions } from "./conditions";
   import { location } from "./location";
   import type { Params } from "./models/params";
@@ -15,17 +15,17 @@
   import { createReference, type Reference } from "./reference";
 
   export let routes: Routes;
+  const dispatch = createEventDispatcher();
 
   const prefixReference = getContext<Reference<string> | undefined>("prefix");
+  const prefixForChildrenReference = createReference("");
+  setContext("prefix", prefixForChildrenReference);
 
   let component: ConstructorOfATypedSvelteComponent | null = null;
   let loadingComponent: ConstructorOfATypedSvelteComponent | null = null;
   let errorComponent: ConstructorOfATypedSvelteComponent | null = null;
   let data: unknown;
   let params: Params;
-
-  const prefixForChildrenReference = createReference("");
-  setContext("prefix", prefixForChildrenReference);
 
   const routePatterns: RoutesPatterns = Object.entries(routes).map(
     ([path, route]) => {

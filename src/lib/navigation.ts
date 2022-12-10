@@ -1,3 +1,4 @@
+import { getConfig } from "./config";
 import { hashString, location, queryString } from "./location";
 
 export function push(
@@ -47,6 +48,19 @@ function navigate(
     const hashStr = "#" + encodeURIComponent(options.hash);
     hashString.set(hashStr);
     uri += hashStr;
+  }
+
+  if (getConfig().hashMode) {
+    uri = "#" + uri;
+
+    if (mode === "push") {
+      window.location.hash = uri;
+    } else {
+      window.history.replaceState({}, "", uri);
+      window.dispatchEvent(new Event("hashchange"));
+    }
+
+    return;
   }
 
   if (mode === "push") {

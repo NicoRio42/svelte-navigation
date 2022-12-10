@@ -8,7 +8,8 @@
 - [ ] navigation events
 - [x] programatic navigation
 - [x] nested routing
-- [ ] error handling
-- [ ] hash based routing
+- [x] error handling
+- [x] hash based routing
+- [ ] tests
 - [ ] fallback route
 - [ ] documentation
