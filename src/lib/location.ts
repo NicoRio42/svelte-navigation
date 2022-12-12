@@ -25,7 +25,6 @@ export const hash = derived(hashString, ($hashstring) =>
 
 if (getConfig().hashMode) {
   window.addEventListener("hashchange", () => {
-    console.log("toto");
     const [path, search, hash] = extractPathQueryStringAndFakeHashFromHash(
       window.location.hash
     );
