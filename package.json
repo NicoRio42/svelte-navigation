@@ -1,15 +1,15 @@
 {
-  "name": "svelte-tourer",
-  "private": true,
+  "name": "svelte-navigation",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --open",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
+    "@sveltejs/package": "1.0.0-next.6",
     "@sveltejs/vite-plugin-svelte": "^1.1.0",
     "@tsconfig/svelte": "^3.0.0",
     "svelte": "^3.52.0",
