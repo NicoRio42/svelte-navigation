@@ -2,7 +2,7 @@ import {
   isNavigationParams,
   type NavigationParams,
   type RoutePreCondition,
-} from "./models/route";
+} from "./models/route.js";
 
 export async function checkConditions(
   conditions: RoutePreCondition | RoutePreCondition[]

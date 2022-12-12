@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { link } from "../lib/links";
-  import { queryParams } from "../lib/location";
+  import { link, queryParams } from "../lib/navigation";
 
   $: console.log($queryParams);
 </script>

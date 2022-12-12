@@ -1,9 +1,8 @@
 <script lang="ts">
   import Loading from "./components/Loading.svelte";
   import { getConfig } from "./lib/config";
-  import { link } from "./lib/links";
   import type { Routes } from "./lib/models/route";
-  import { back, forward } from "./lib/navigation";
+  import { back, forward, link } from "./lib/navigation";
   import Router from "./lib/Router.svelte";
   import About from "./routes/About.svelte";
   import Error from "./routes/Error.svelte";

@@ -7,7 +7,7 @@
 
 <script lang="ts">
   import { getConfig } from "../lib/config";
-  import { link } from "../lib/links";
+  import { link } from "../lib/navigation";
 
   import type { Post } from "../models/post";
 

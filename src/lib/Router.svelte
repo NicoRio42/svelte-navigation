@@ -1,18 +1,17 @@
 <script lang="ts">
   import { parse } from "regexparam";
   import { createEventDispatcher, getContext, setContext } from "svelte";
-  import { checkConditions } from "./conditions";
-  import { location } from "./location";
+  import { checkConditions } from "./conditions.js";
   import type { Params } from "./models/params";
   import {
     isAsyncRoute,
     isSyncRoute,
     type Routes,
     type RoutesPatterns,
-  } from "./models/route";
-  import { replace } from "./navigation";
-  import { extractParamsFromPath } from "./params";
-  import { createReference, type Reference } from "./reference";
+  } from "./models/route.js";
+  import { location, replace } from "./navigation.js";
+  import { extractParamsFromPath } from "./params.js";
+  import { createReference, type Reference } from "./reference.js";
 
   export let routes: Routes;
   const dispatch = createEventDispatcher();

@@ -1,5 +1,66 @@
-import { getConfig } from "./config";
-import { hashString, location, queryString } from "./location";
+import { derived, writable } from "svelte/store";
+import { getConfig } from "./config.js";
+
+const _location = writable(window.location.pathname);
+export const location = derived(_location, ($_location) => $_location);
+
+const queryString = writable(window.location.search);
+
+export const queryParams = derived(queryString, ($queryString) => {
+  if ($queryString.length === 0) return {};
+  const params: Record<string, string> = {};
+
+  $queryString
+    .slice(1)
+    .split("&")
+    .map((keyvalue) => keyvalue.split("="))
+    .forEach(([key, value]) => (params[key] = value));
+
+  return params;
+});
+
+const hashString = writable(window.location.hash);
+
+export const hash = derived(hashString, ($hashstring) =>
+  $hashstring.length === 0 ? "" : $hashstring.slice(1)
+);
+
+if (getConfig().hashMode) {
+  window.addEventListener("hashchange", () => {
+    const [path, search, hash] = extractPathQueryStringAndFakeHashFromHash(
+      window.location.hash
+    );
+
+    _location.set(path);
+    queryString.set(search);
+    hashString.set(hash);
+  });
+} else {
+  window.addEventListener("popstate", () => {
+    _location.set(window.location.pathname);
+    queryString.set(window.location.search);
+    hashString.set(window.location.hash);
+  });
+}
+
+function extractPathQueryStringAndFakeHashFromHash(hash: string): string[] {
+  if (hash.length === 0) return ["", "", ""];
+
+  const cleanedHash = hash.slice(1);
+  const fullLocation = cleanedHash.split("?");
+
+  if (fullLocation.length === 1) fullLocation.push("");
+  else fullLocation[1] = "?" + fullLocation[1];
+
+  const fullQueryStr = fullLocation[1].split("#");
+  if (fullQueryStr.length === 1) fullLocation.push("");
+  else {
+    fullLocation[1] = fullQueryStr[0];
+    fullLocation.push("#" + fullQueryStr[1]);
+  }
+
+  return fullLocation;
+}
 
 export function push(
   path: string,
@@ -28,7 +89,7 @@ function navigate(
   path: string,
   options?: { queryParams?: Record<string, string>; hash?: string }
 ) {
-  location.set(path);
+  _location.set(path);
   let uri = path;
 
   if (options?.queryParams !== undefined) {
@@ -68,4 +129,28 @@ function navigate(
   } else {
     window.history.replaceState({}, "", uri);
   }
+}
+
+export function link(node: HTMLAnchorElement): { destroy: () => void } {
+  function handleClick(event: MouseEvent) {
+    const currentTarget = event.currentTarget as HTMLAnchorElement;
+    if (currentTarget.origin !== window.location.origin) return;
+
+    event.preventDefault();
+    const path = currentTarget.pathname;
+
+    window.history.pushState(
+      {},
+      "",
+      path + currentTarget.search + currentTarget.hash
+    );
+
+    _location.set(path);
+    queryString.set(currentTarget.search);
+    hashString.set(currentTarget.hash);
+  }
+
+  node.addEventListener("click", handleClick);
+
+  return { destroy: () => node.removeEventListener("click", handleClick) };
 }

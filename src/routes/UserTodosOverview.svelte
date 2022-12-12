@@ -9,9 +9,8 @@
 
 <script lang="ts">
   import { getConfig } from "../lib/config";
-
-  import { link } from "../lib/links";
   import type { Params } from "../lib/models/params";
+  import { link } from "../lib/navigation";
   import type { Todo } from "../models/todo";
 
   export let data: Todo[];
