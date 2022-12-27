@@ -6,7 +6,6 @@
 </script>
 
 <script lang="ts">
-  import { getConfig } from "../lib/config";
   import { link } from "../lib/Router.svelte";
   import type { User } from "../models/user";
 
@@ -18,11 +17,7 @@
 <ul>
   {#each data as user}
     <li>
-      {#if getConfig().hashMode}
-        <a href="#/users/{user.id}">{user.name}</a>
-      {:else}
-        <a href="/users/{user.id}" use:link>{user.name}</a>
-      {/if}
+      <a href="/users/{user.id}" use:link>{user.name}</a>
     </li>
   {/each}
 </ul>

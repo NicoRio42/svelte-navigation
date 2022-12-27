@@ -8,7 +8,6 @@
 </script>
 
 <script lang="ts">
-  import { getConfig } from "../lib/config";
   import type { Params } from "../lib/models/params";
   import { link } from "../lib/Router.svelte";
   import type { Todo } from "../models/todo";
@@ -19,15 +18,9 @@
 <ul>
   {#each data as todo}
     <li>
-      {#if getConfig().hashMode}
-        <a href="#/users/{todo.userId}/todos/{todo.id}"
-          >{todo.title} {todo.userId}</a
-        >
-      {:else}
-        <a href="/users/{todo.userId}/todos/{todo.id}" use:link
-          >{todo.title} {todo.userId}</a
-        >
-      {/if}
+      <a href="/users/{todo.userId}/todos/{todo.id}" use:link
+        >{todo.title} {todo.userId}</a
+      >
     </li>
   {/each}
 </ul>

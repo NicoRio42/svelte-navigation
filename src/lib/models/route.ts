@@ -2,23 +2,23 @@ import type { LoadData } from "./load";
 
 export type Route = ConstructorOfATypedSvelteComponent | SyncRoute | AsyncRoute;
 
-type SyncRoute = {
-  component: ConstructorOfATypedSvelteComponent;
-  loadData?: LoadData;
+interface AbstractRoute {
   loadingComponent?: ConstructorOfATypedSvelteComponent;
   conditions?: RoutePreCondition | RoutePreCondition[];
   errorComponent?: ConstructorOfATypedSvelteComponent;
-};
+}
 
-type AsyncRoute = {
+export interface SyncRoute extends AbstractRoute {
+  component: ConstructorOfATypedSvelteComponent;
+  loadData?: LoadData;
+}
+
+export interface AsyncRoute extends AbstractRoute {
   asyncComponent: () => Promise<{
     default: ConstructorOfATypedSvelteComponent;
     loadData?: LoadData;
   }>;
-  loadingComponent?: ConstructorOfATypedSvelteComponent;
-  conditions?: RoutePreCondition | RoutePreCondition[];
-  errorComponent?: ConstructorOfATypedSvelteComponent;
-};
+}
 
 export type NavigationParams = {
   path: string;

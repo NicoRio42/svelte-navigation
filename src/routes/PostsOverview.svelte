@@ -6,7 +6,6 @@
 </script>
 
 <script lang="ts">
-  import { getConfig } from "../lib/config";
   import { link } from "../lib/Router.svelte";
 
   import type { Post } from "../models/post";
@@ -17,9 +16,5 @@
 <h1>Posts</h1>
 
 {#each data as post}
-  {#if getConfig().hashMode}
-    <a href="#/posts/{post.id}">{post.title}</a>
-  {:else}
-    <a href="/posts/{post.id}" use:link>{post.title}</a>
-  {/if}
+  <a href="/posts/{post.id}" use:link>{post.title}</a>
 {/each}
