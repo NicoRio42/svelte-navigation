@@ -1,5 +1,5 @@
 <script>
-  import { replace } from "../lib/navigation";
+  import { replace } from "../lib/Router.svelte";
 </script>
 
 <h1>Home</h1>

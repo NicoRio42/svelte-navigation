@@ -10,7 +10,7 @@
 <script lang="ts">
   import { getConfig } from "../lib/config";
   import type { Params } from "../lib/models/params";
-  import { link } from "../lib/navigation";
+  import { link } from "../lib/Router.svelte";
   import type { Todo } from "../models/todo";
 
   export let data: Todo[];

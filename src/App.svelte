@@ -2,7 +2,7 @@
   import Loading from "./components/Loading.svelte";
   import { getConfig } from "./lib/config";
   import type { Routes } from "./lib/models/route";
-  import { back, forward, link } from "./lib/navigation";
+  import { back, forward, link } from "./lib/Router.svelte";
   import Router from "./lib/Router.svelte";
   import About from "./routes/About.svelte";
   import Error from "./routes/Error.svelte";

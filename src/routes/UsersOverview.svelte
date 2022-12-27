@@ -7,7 +7,7 @@
 
 <script lang="ts">
   import { getConfig } from "../lib/config";
-  import { link } from "../lib/navigation";
+  import { link } from "../lib/Router.svelte";
   import type { User } from "../models/user";
 
   export let data: User[];
