@@ -35,7 +35,7 @@
     }
   );
 
-  $: handleMatchedRoute($location);
+  location.subscribe((loc) => handleMatchedRoute(loc));
 
   async function handleMatchedRoute(loc: string) {
     console.log(loc);
