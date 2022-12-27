@@ -1,8 +1,9 @@
 import { derived, writable } from "svelte/store";
 import { getConfig } from "./config.js";
 
-const _location = writable(window.location.pathname);
-export const location = derived(_location, ($_location) => $_location);
+export const location = writable(window.location.pathname);
+
+location.subscribe((loc) => console.log(loc));
 
 const queryString = writable(window.location.search);
 
@@ -31,13 +32,13 @@ if (getConfig().hashMode) {
       window.location.hash
     );
 
-    _location.set(path);
+    location.set(path);
     queryString.set(search);
     hashString.set(hash);
   });
 } else {
   window.addEventListener("popstate", () => {
-    _location.set(window.location.pathname);
+    location.set(window.location.pathname);
     queryString.set(window.location.search);
     hashString.set(window.location.hash);
   });
@@ -89,7 +90,7 @@ function navigate(
   path: string,
   options?: { queryParams?: Record<string, string>; hash?: string }
 ) {
-  _location.set(path);
+  location.set(path);
   let uri = path;
 
   if (options?.queryParams !== undefined) {
@@ -144,7 +145,7 @@ function handleClick(event: MouseEvent) {
 
   console.log(path);
 
-  _location.set(path);
+  location.set(path);
   queryString.set(currentTarget.search);
   hashString.set(currentTarget.hash);
 }

@@ -37,13 +37,13 @@
 
   $: handleMatchedRoute($location);
 
-  async function handleMatchedRoute(location: string) {
-    console.log(location);
+  async function handleMatchedRoute(loc: string) {
+    console.log(loc);
     errorComponent = null;
     loadingComponent = null;
 
     const matchedRoute = routePatterns.find((route) =>
-      route.pathMatcher.pattern.test(location)
+      route.pathMatcher.pattern.test(loc)
     );
 
     if (matchedRoute === undefined) return;
@@ -54,7 +54,7 @@
         : matchedRoute.path
     );
 
-    params = extractParamsFromPath(location, matchedRoute.pathMatcher);
+    params = extractParamsFromPath(loc, matchedRoute.pathMatcher);
 
     if (isSyncRoute(matchedRoute.route)) {
       const {
