@@ -142,6 +142,8 @@ function handleClick(event: MouseEvent) {
     path + currentTarget.search + currentTarget.hash
   );
 
+  console.log(path);
+
   _location.set(path);
   queryString.set(currentTarget.search);
   hashString.set(currentTarget.hash);

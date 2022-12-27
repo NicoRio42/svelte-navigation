@@ -38,6 +38,7 @@
   $: handleMatchedRoute($location);
 
   async function handleMatchedRoute(location: string) {
+    console.log(location);
     errorComponent = null;
     loadingComponent = null;
 
