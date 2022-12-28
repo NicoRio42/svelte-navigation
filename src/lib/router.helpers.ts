@@ -1,3 +1,4 @@
+import type { SearchParams } from "./models/params";
 import type { AsyncRoute, SyncRoute } from "./models/route";
 
 export function createAsyncRouteFromSyncRoute(
@@ -17,22 +18,23 @@ export function createAsyncRouteFromSyncRoute(
 
 export function extractSearchParamsFromSearchSting(
   searchString: string
-): Record<string, string> {
+): SearchParams {
   if (searchString.length === 0) return {};
-  const params: Record<string, string> = {};
+  const params: SearchParams = {};
 
   searchString
     .slice(1)
     .split("&")
     .map((keyvalue) => keyvalue.split("="))
-    .forEach(([key, value]) => (params[key] = value));
+    .forEach(([key, value]) => {
+      const numberValue = Number(value);
+      params[key] = isNaN(numberValue) ? value : numberValue;
+    });
 
   return params;
 }
 
-export function searchParamsToString(
-  searchParams: Record<string, string>
-): string {
+export function searchParamsToString(searchParams: SearchParams): string {
   const entries = Object.entries(searchParams);
 
   if (entries.length === 0) return "";

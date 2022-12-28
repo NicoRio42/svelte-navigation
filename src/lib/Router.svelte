@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-  import { derived, writable } from "svelte/store";
+  import { writable } from "svelte/store";
   import { searchParamsToString } from "./router.helpers";
 
   const location = writable<RouterLocation>({
@@ -97,7 +97,6 @@
   import { parse } from "regexparam";
   import { getContext, setContext } from "svelte";
   import { checkConditions } from "./conditions.js";
-  import type { Params } from "./models/params";
   import {
     isAsyncRoute,
     isSyncRoute,
@@ -113,19 +112,28 @@
     createAsyncRouteFromSyncRoute,
     extractSearchParamsFromSearchSting,
   } from "./router.helpers.js";
+  import { createEventDispatcher } from "svelte";
+  import type { PathParams, SearchParams } from "./models/params";
 
   export let routes: Routes;
+  export let loadingComponent: ConstructorOfATypedSvelteComponent | null = null;
+  export let errorComponent: ConstructorOfATypedSvelteComponent | null = null;
+
+  const dispatch = createEventDispatcher();
 
   const prefixReference = getContext<Reference<string> | undefined>("prefix");
   const prefixForChildrenReference = createReference("");
   setContext("prefix", prefixForChildrenReference);
 
   let component: ConstructorOfATypedSvelteComponent | null = null;
-  let loadingComponent: ConstructorOfATypedSvelteComponent | null = null;
-  let errorComponent: ConstructorOfATypedSvelteComponent | null = null;
+
+  let displayedLoadingComponent: ConstructorOfATypedSvelteComponent | null =
+    null;
+
+  let displayedErrorComponent: ConstructorOfATypedSvelteComponent | null = null;
   let data: unknown;
-  let pathParams: Params;
-  let searchParams: Params;
+  let pathParams: PathParams;
+  let searchParams: SearchParams;
 
   const routePatterns: RoutesPatterns = Object.entries(routes).map(
     ([path, route]) => {
@@ -139,8 +147,8 @@
   location.subscribe((loc) => handleMatchedRoute(loc));
 
   async function handleMatchedRoute(loc: RouterLocation) {
-    errorComponent = null;
-    loadingComponent = null;
+    displayedErrorComponent = null;
+    displayedLoadingComponent = null;
 
     const matchedRoute = routePatterns.find((route) =>
       route.pathMatcher.pattern.test(loc.path)
@@ -152,12 +160,30 @@
       ? matchedRoute.path.slice(0, -2)
       : matchedRoute.path;
 
+    const rawPathParams = extractParamsFromPath(
+      loc.path,
+      matchedRoute.pathMatcher
+    );
+
+    const rawSearchParams = extractSearchParamsFromSearchSting(loc.search);
+
+    // Simple component
     if (!isAsyncRoute(matchedRoute.route) && !isSyncRoute(matchedRoute.route)) {
+      dispatch("navigationStart");
+
+      if (!areSuperficialyEqual(pathParams, rawPathParams))
+        pathParams = rawPathParams;
+
+      if (!areSuperficialyEqual(pathParams, rawSearchParams))
+        searchParams = rawSearchParams;
+
       component = matchedRoute.route;
       prefixForChildrenReference.set(prefixForChildren);
+      dispatch("navigationFinish");
       return;
     }
 
+    // Transforming syncRoute to asyncRoute
     const asyncRoute: AsyncRoute = isAsyncRoute(matchedRoute.route)
       ? matchedRoute.route
       : createAsyncRouteFromSyncRoute(matchedRoute.route);
@@ -171,12 +197,7 @@
       seachParamsSchema,
     } = asyncRoute;
 
-    const rawPathParams = extractParamsFromPath(
-      loc.path,
-      matchedRoute.pathMatcher
-    );
-
-    let parsedPathParams: Params;
+    let parsedPathParams: PathParams;
 
     if (pathParamsSchema !== undefined) {
       try {
@@ -191,8 +212,7 @@
     if (!areSuperficialyEqual(pathParams, parsedPathParams))
       pathParams = parsedPathParams;
 
-    const rawSearchParams = extractSearchParamsFromSearchSting(loc.search);
-    let parsedSearchParams: Params;
+    let parsedSearchParams: SearchParams;
 
     if (seachParamsSchema !== undefined) {
       try {
@@ -204,55 +224,68 @@
       parsedSearchParams = rawSearchParams;
     }
 
-    if (!areSuperficialyEqual(pathParams, parsedPathParams))
+    if (!areSuperficialyEqual(searchParams, parsedSearchParams))
       searchParams = parsedSearchParams;
 
     prefixForChildrenReference.set(prefixForChildren);
 
+    dispatch("navigationStart");
+
     if (matchedLoadingComponent !== undefined)
-      loadingComponent = matchedLoadingComponent;
+      displayedLoadingComponent = matchedLoadingComponent;
+    else if (loadingComponent !== null)
+      displayedLoadingComponent = loadingComponent;
 
     try {
       if (conditions !== undefined) {
         const conditionsResult = await checkConditions(conditions);
 
         if (typeof conditionsResult !== "boolean") {
-          loadingComponent = null;
+          displayedLoadingComponent = null;
           replace(conditionsResult.path, conditionsResult.options);
+          dispatch("navigationFinish");
           return;
         }
 
-        if (!conditionsResult) return;
+        if (!conditionsResult) {
+          dispatch("navigationFinish");
+          return;
+        }
       }
 
       const { default: matchedComponent, loadData } = await asyncComponent();
 
       if (loadData === undefined) {
         component = matchedComponent;
+        dispatch("navigationFinish");
         return;
       }
 
       data = await loadData(pathParams, searchParams);
       component = matchedComponent;
-      loadingComponent = null;
+      displayedLoadingComponent = null;
 
+      dispatch("navigationFinish");
       return;
     } catch (error) {
       console.error(error);
-      loadingComponent = null;
+      displayedLoadingComponent = null;
 
       if (matchedErrorComponent !== undefined)
-        errorComponent = matchedErrorComponent;
+        displayedErrorComponent = matchedErrorComponent;
+      else if (errorComponent !== null)
+        displayedErrorComponent = errorComponent;
 
+      dispatch("navigationFinish");
       return;
     }
   }
 </script>
 
-{#if errorComponent}
-  <svelte:component this={errorComponent} />
-{:else if loadingComponent}
-  <svelte:component this={loadingComponent} />
+{#if displayedErrorComponent}
+  <svelte:component this={displayedErrorComponent} />
+{:else if displayedLoadingComponent}
+  <svelte:component this={displayedLoadingComponent} />
 {:else}
   <svelte:component this={component} {data} {pathParams} {searchParams} />
 {/if}

@@ -1,6 +1,6 @@
-import type { Params } from "./params";
+import type { PathParams, SearchParams } from "./params";
 
 export type LoadData =
   | (() => Promise<unknown>)
-  | ((pathParams: Params) => Promise<unknown>)
-  | ((pathParams: Params, searchParams: Params) => Promise<unknown>);
+  | ((pathParams: PathParams) => Promise<unknown>)
+  | ((pathParams: PathParams, searchParams: SearchParams) => Promise<unknown>);

@@ -1,14 +1,15 @@
 <script lang="ts" context="module">
-  export async function loadData(params?: Params): Promise<Todo[]> {
+  import type { PathParams } from "../lib/models/params";
+
+  export async function loadData(pathParams: PathParams): Promise<Todo[]> {
     const todos = await fetch("https://jsonplaceholder.typicode.com/todos");
     return ((await todos.json()) as Todo[]).filter(
-      (todo) => String(todo.userId) === params?.userId
+      (todo) => String(todo.userId) === pathParams.userId
     );
   }
 </script>
 
 <script lang="ts">
-  import type { Params } from "../lib/models/params";
   import { link } from "../lib/Router.svelte";
   import type { Todo } from "../models/todo";
 
