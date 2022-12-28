@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { link } from "../lib/navigation";
+  import { link } from "../lib/Router.svelte";
 </script>
 
 <h1>About</h1>

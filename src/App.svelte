@@ -10,7 +10,7 @@
   import PostsOverview, {
     loadData as loadPosts,
   } from "./routes/PostsOverview.svelte";
-  import { waitfor2Seconds } from "./utils/wait";
+  import { wait } from "./utils/wait";
 
   const routes: Routes = {
     "/": Home,
@@ -28,7 +28,7 @@
       conditions: [
         () => true,
         async () => {
-          await waitfor2Seconds();
+          await wait(1500);
           return { path: "/login" };
         },
       ],
@@ -49,6 +49,8 @@
     },
   };
 </script>
+
+<progress />
 
 <h1>Svelte tourer</h1>
 

@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-  import { link } from "../lib/navigation";
+  import { link } from "../lib/Router.svelte";
   import type { User } from "../models/user";
 
   export let data: User[];
