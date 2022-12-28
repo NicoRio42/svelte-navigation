@@ -1,4 +1,5 @@
 import type { LoadData } from "./load";
+import type z from "zod";
 
 export type Route = ConstructorOfATypedSvelteComponent | SyncRoute | AsyncRoute;
 
@@ -6,6 +7,8 @@ interface AbstractRoute {
   loadingComponent?: ConstructorOfATypedSvelteComponent;
   conditions?: RoutePreCondition | RoutePreCondition[];
   errorComponent?: ConstructorOfATypedSvelteComponent;
+  pathParamsSchema?: z.SomeZodObject;
+  seachParamsSchema?: z.SomeZodObject;
 }
 
 export interface SyncRoute extends AbstractRoute {
@@ -19,6 +22,12 @@ export interface AsyncRoute extends AbstractRoute {
     loadData?: LoadData;
   }>;
 }
+
+export type RouterLocation = {
+  path: string;
+  search: string;
+  hash: string;
+};
 
 export type NavigationParams = {
   path: string;

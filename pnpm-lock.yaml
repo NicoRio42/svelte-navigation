@@ -11,9 +11,11 @@ specifiers:
   tslib: ^2.4.0
   typescript: ^4.6.4
   vite: ^3.2.3
+  zod: ^3.20.2
 
 dependencies:
   regexparam: 2.0.1
+  zod: 3.20.2
 
 devDependencies:
   '@sveltejs/package': 1.0.0-next.6_vjccw6zkwqrmxudvmy4reaayx4
@@ -959,3 +961,7 @@ packages:
   /wrappy/1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
     dev: true
+
+  /zod/3.20.2:
+    resolution: {integrity: sha512-1MzNQdAvO+54H+EaK5YpyEy0T+Ejo/7YLHS93G3RnYWh5gaotGHwGeN/ZO687qEDU2y4CdStQYXVHIgrUl5UVQ==}
+    dev: false

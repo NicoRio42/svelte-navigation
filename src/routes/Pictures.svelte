@@ -1,8 +1,8 @@
 <script lang="ts" context="module">
-  import { waitfor2Seconds } from "../utils/wait";
+  import { wait } from "../utils/wait";
 
   export async function loadData(): Promise<string> {
-    await waitfor2Seconds();
+    await wait(2000);
     throw new Error("Error");
     return Promise.resolve("balblabla");
   }

@@ -1,106 +1,3 @@
-<script context="module" lang="ts">
-  import { derived, writable } from "svelte/store";
-
-  export const location = writable(window.location.pathname);
-
-  const queryString = writable(window.location.search);
-  export const queryParams = derived(
-    queryString,
-    extractSearchParamsFromSearchSting
-  );
-
-  const hashString = writable(window.location.hash);
-  export const hash = derived(hashString, ($hashstring) =>
-    $hashstring.length === 0 ? "" : $hashstring.slice(1)
-  );
-
-  window.addEventListener("popstate", () => {
-    location.set(window.location.pathname);
-    queryString.set(window.location.search);
-    hashString.set(window.location.hash);
-  });
-
-  export function push(
-    path: string,
-    options?: { queryParams?: Record<string, string>; hash?: string }
-  ) {
-    navigate("push", path, options);
-  }
-
-  export function replace(
-    path: string,
-    options?: { queryParams?: Record<string, string>; hash?: string }
-  ) {
-    navigate("replace", path, options);
-  }
-
-  export function back() {
-    window.history.back();
-  }
-
-  export function forward() {
-    window.history.forward();
-  }
-
-  function navigate(
-    mode: "push" | "replace",
-    path: string,
-    options?: { queryParams?: Record<string, string>; hash?: string }
-  ) {
-    location.set(path);
-    let uri = path;
-
-    if (options?.queryParams !== undefined) {
-      const queryStr =
-        "?" +
-        Object.entries(options.queryParams)
-          .map((keyvalue) =>
-            keyvalue
-              .map((keyOrValue) => encodeURIComponent(keyOrValue))
-              .join("=")
-          )
-          .join("&");
-
-      queryString.set(queryStr);
-      uri += queryStr;
-    }
-
-    if (options?.hash !== undefined) {
-      const hashStr = "#" + encodeURIComponent(options.hash);
-      hashString.set(hashStr);
-      uri += hashStr;
-    }
-
-    if (mode === "push") {
-      window.history.pushState({}, "", uri);
-    } else {
-      window.history.replaceState({}, "", uri);
-    }
-  }
-
-  function handleClick(event: MouseEvent) {
-    event.preventDefault();
-    const currentTarget = event.currentTarget as HTMLAnchorElement;
-    const path = currentTarget.pathname;
-
-    window.history.pushState(
-      {},
-      "",
-      path + currentTarget.search + currentTarget.hash
-    );
-
-    location.set(path);
-    queryString.set(currentTarget.search);
-    hashString.set(currentTarget.hash);
-  }
-
-  export function link(node: HTMLAnchorElement): { destroy: () => void } {
-    node.addEventListener("click", handleClick);
-
-    return { destroy: () => node.removeEventListener("click", handleClick) };
-  }
-</script>
-
 <script lang="ts">
   import { parse } from "regexparam";
   import { getContext, setContext } from "svelte";
@@ -110,12 +7,15 @@
     isAsyncRoute,
     isSyncRoute,
     type AsyncRoute,
+    type RouterLocation,
     type Routes,
     type RoutesPatterns,
   } from "./models/route.js";
+  import { location, replace } from "./navigation.js";
   import { extractParamsFromPath } from "./params.js";
   import { createReference, type Reference } from "./reference.js";
   import {
+    areSuperficialyEqual,
     createAsyncRouteFromSyncRoute,
     extractSearchParamsFromSearchSting,
   } from "./router.helpers.js";
@@ -130,7 +30,8 @@
   let loadingComponent: ConstructorOfATypedSvelteComponent | null = null;
   let errorComponent: ConstructorOfATypedSvelteComponent | null = null;
   let data: unknown;
-  let params: Params;
+  let pathParams: Params;
+  let searchParams: Params;
 
   const routePatterns: RoutesPatterns = Object.entries(routes).map(
     ([path, route]) => {
@@ -143,26 +44,23 @@
 
   location.subscribe((loc) => handleMatchedRoute(loc));
 
-  async function handleMatchedRoute(loc: string) {
+  async function handleMatchedRoute(loc: RouterLocation) {
     errorComponent = null;
     loadingComponent = null;
 
     const matchedRoute = routePatterns.find((route) =>
-      route.pathMatcher.pattern.test(loc)
+      route.pathMatcher.pattern.test(loc.path)
     );
 
     if (matchedRoute === undefined) return;
 
-    prefixForChildrenReference.set(
-      matchedRoute.path.endsWith("/*")
-        ? matchedRoute.path.slice(0, -2)
-        : matchedRoute.path
-    );
-
-    params = extractParamsFromPath(loc, matchedRoute.pathMatcher);
+    const prefixForChildren = matchedRoute.path.endsWith("/*")
+      ? matchedRoute.path.slice(0, -2)
+      : matchedRoute.path;
 
     if (!isAsyncRoute(matchedRoute.route) && !isSyncRoute(matchedRoute.route)) {
       component = matchedRoute.route;
+      prefixForChildrenReference.set(prefixForChildren);
       return;
     }
 
@@ -175,7 +73,47 @@
       loadingComponent: matchedLoadingComponent,
       conditions,
       errorComponent: matchedErrorComponent,
+      pathParamsSchema,
+      seachParamsSchema,
     } = asyncRoute;
+
+    const rawPathParams = extractParamsFromPath(
+      loc.path,
+      matchedRoute.pathMatcher
+    );
+
+    let parsedPathParams: Params;
+
+    if (pathParamsSchema !== undefined) {
+      try {
+        parsedPathParams = pathParamsSchema.parse(rawPathParams);
+      } catch (e) {
+        return;
+      }
+    } else {
+      parsedPathParams = rawPathParams;
+    }
+
+    if (!areSuperficialyEqual(pathParams, parsedPathParams))
+      pathParams = parsedPathParams;
+
+    const rawSearchParams = extractSearchParamsFromSearchSting(loc.search);
+    let parsedSearchParams: Params;
+
+    if (seachParamsSchema !== undefined) {
+      try {
+        parsedSearchParams = seachParamsSchema.parse(rawSearchParams);
+      } catch (e) {
+        return;
+      }
+    } else {
+      parsedSearchParams = rawSearchParams;
+    }
+
+    if (!areSuperficialyEqual(pathParams, parsedPathParams))
+      searchParams = parsedSearchParams;
+
+    prefixForChildrenReference.set(prefixForChildren);
 
     if (matchedLoadingComponent !== undefined)
       loadingComponent = matchedLoadingComponent;
@@ -200,7 +138,7 @@
         return;
       }
 
-      data = await loadData(params);
+      data = await loadData(pathParams, searchParams);
       component = matchedComponent;
       loadingComponent = null;
 
@@ -222,5 +160,5 @@
 {:else if loadingComponent}
   <svelte:component this={loadingComponent} />
 {:else}
-  <svelte:component this={component} {data} {params} />
+  <svelte:component this={component} {data} {pathParams} {searchParams} />
 {/if}

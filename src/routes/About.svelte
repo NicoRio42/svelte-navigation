@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { link, queryParams } from "../lib/Router.svelte";
-
-  $: console.log($queryParams);
+  import { link } from "../lib/navigation";
 </script>
 
 <h1>About</h1>

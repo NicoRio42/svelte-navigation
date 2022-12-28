@@ -30,6 +30,23 @@ export function extractSearchParamsFromSearchSting(
   return params;
 }
 
+export function searchParamsToString(
+  searchParams: Record<string, string>
+): string {
+  const entries = Object.entries(searchParams);
+
+  if (entries.length === 0) return "";
+
+  return (
+    "&" +
+    entries
+      .map((keyvalue) =>
+        keyvalue.map((keyOrValue) => encodeURIComponent(keyOrValue)).join("=")
+      )
+      .join("&")
+  );
+}
+
 export function extractPathQueryStringAndFakeHashFromHash(
   hash: string
 ): string[] {
@@ -56,6 +73,8 @@ export function areSuperficialyEqual(
   object2: Record<string, unknown>
 ): boolean {
   return (
+    typeof object1 === "object" &&
+    typeof object2 === "object" &&
     Object.entries(object1).every(([key, value]) => object2[key] === value) &&
     Object.entries(object2).every(([key, value]) => object1[key] === value)
   );

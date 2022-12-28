@@ -1,5 +1,5 @@
-export async function waitfor2Seconds() {
+export async function wait(timeInSeconds: number) {
   await new Promise(function (resolve) {
-    setTimeout(resolve, 2000);
+    setTimeout(resolve, timeInSeconds);
   });
 }
