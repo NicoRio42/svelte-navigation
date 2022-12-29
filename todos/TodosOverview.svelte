@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-  import type { PathParams, SearchParams } from "../src/lib/models/params";
+  import type { PathParams } from "../src/lib/models/params";
   import z from "zod";
 
   export const todosSearchParamsSchema = z.object({
@@ -29,8 +29,6 @@
 
   export let data: Todo[];
   export let searchParams: TodosSearchParams;
-
-  console.log("toto");
 </script>
 
 <h1>Todos</h1>

@@ -1,3 +1,4 @@
+import { tick } from "svelte";
 import type { SearchParams } from "./models/params";
 import type { AsyncRoute, SyncRoute } from "./models/route";
 
@@ -80,4 +81,24 @@ export function areSuperficialyEqual(
     Object.entries(object1).every(([key, value]) => object2[key] === value) &&
     Object.entries(object2).every(([key, value]) => object1[key] === value)
   );
+}
+
+export function handleScroll(hash: string) {
+  if (hash.length <= 1) {
+    window.scroll({ top: 0 });
+    return;
+  }
+
+  const id = hash.slice(1);
+
+  setTimeout(() => {
+    const elementToScrollTo = document.getElementById(id);
+
+    if (elementToScrollTo !== null) {
+      elementToScrollTo.scrollIntoView();
+      return;
+    }
+
+    window.scroll({ top: 0 });
+  });
 }

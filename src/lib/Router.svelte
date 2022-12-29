@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
   import { writable } from "svelte/store";
-  import { searchParamsToString } from "./router.helpers";
+  import { handleScroll, searchParamsToString } from "./router.helpers";
 
   const location = writable<RouterLocation>({
     path: window.location.pathname,
@@ -179,6 +179,7 @@
 
       component = matchedRoute.route;
       prefixForChildrenReference.set(prefixForChildren);
+      handleScroll(loc.hash);
       dispatch("navigationFinish");
       return;
     }
@@ -257,6 +258,7 @@
 
       if (loadData === undefined) {
         component = matchedComponent;
+        handleScroll(loc.hash);
         dispatch("navigationFinish");
         return;
       }
@@ -265,6 +267,7 @@
       component = matchedComponent;
       displayedLoadingComponent = null;
 
+      handleScroll(loc.hash);
       dispatch("navigationFinish");
       return;
     } catch (error) {

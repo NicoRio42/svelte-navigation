@@ -64,6 +64,7 @@
   <ul>
     <li><a href="/" use:link>Home</a></li>
     <li><a href="/about" use:link>About</a></li>
+    <li><a href="/about#toto" use:link>About to title</a></li>
     <li><a href="/posts" use:link>Posts</a></li>
     <li><a href="/users" use:link>Users</a></li>
     <li><a href="/pictures" use:link>Pictures with error</a></li>
