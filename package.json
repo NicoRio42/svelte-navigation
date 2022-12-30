@@ -12,15 +12,17 @@
     "@sveltejs/package": "1.0.0-next.6",
     "@sveltejs/vite-plugin-svelte": "^1.1.0",
     "@tsconfig/svelte": "^3.0.0",
-    "svelte": "^3.52.0",
     "svelte-check": "^2.9.2",
     "svelte-preprocess": "^4.10.7",
     "tslib": "^2.4.0",
     "typescript": "^4.6.4",
     "vite": "^3.2.3"
   },
-  "dependencies": {
-    "regexparam": "^2.0.1",
+  "peerDependencies": {
+    "svelte": "^3.52.0",
     "zod": "^3.20.2"
+  },
+  "dependencies": {
+    "regexparam": "^2.0.1"
   }
 }

@@ -1,4 +1,3 @@
-import { tick } from "svelte";
 import type { SearchParams } from "./models/params";
 import type { AsyncRoute, SyncRoute } from "./models/route";
 
