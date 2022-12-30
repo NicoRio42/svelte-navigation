@@ -39,6 +39,12 @@
     "/users": {
       asyncComponent: () => import("./routes/UsersOverview.svelte"),
     },
+    "/2-seconds": {
+      asyncComponent: () => import("./routes/TwoSeconds.svelte"),
+    },
+    "/5-seconds": {
+      asyncComponent: () => import("./routes/FiveSeconds.svelte"),
+    },
     "/users/:userId": {
       asyncComponent: () => import("./routes/User.svelte"),
     },
@@ -66,6 +72,9 @@
     <li><a href="/about" use:link>About</a></li>
     <li><a href="/about#toto" use:link>About to title</a></li>
     <li><a href="/posts" use:link>Posts</a></li>
+    <li><a href="/users" use:link>Users</a></li>
+    <li><a href="/2-seconds" use:link>2 seconds</a></li>
+    <li><a href="/5-seconds" use:link>5 seconds</a></li>
     <li><a href="/users" use:link>Users</a></li>
     <li><a href="/pictures" use:link>Pictures with error</a></li>
     <li><a href="/todos/">Todos</a></li>

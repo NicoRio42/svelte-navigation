@@ -2,6 +2,8 @@
   import { writable } from "svelte/store";
   import { handleScroll, searchParamsToString } from "./router.helpers";
 
+  const currentNavigationSymbolReference = createReference<Symbol>(Symbol());
+
   const location = writable<RouterLocation>({
     path: window.location.pathname,
     search: window.location.search,
@@ -157,6 +159,9 @@
 
     if (matchedRoute === undefined) return;
 
+    const currentNavigationSymbol = Symbol();
+    currentNavigationSymbolReference.set(currentNavigationSymbol);
+
     const prefixForChildren = matchedRoute.path.endsWith("/*")
       ? matchedRoute.path.slice(0, -2)
       : matchedRoute.path;
@@ -269,7 +274,14 @@
         return;
       }
 
-      data = await loadData(pathParams, searchParams);
+      const currentNavigationData = await loadData(pathParams, searchParams);
+
+      // Cancelling if another navigation has been triggered
+      if (currentNavigationSymbol !== currentNavigationSymbolReference.get())
+        return;
+
+      data = currentNavigationData;
+
       component = matchedComponent;
       displayedLoadingComponent = null;
 
