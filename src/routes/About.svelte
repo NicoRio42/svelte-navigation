@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { link } from "../lib/Router.svelte";
-
-  onMount(() => console.log("created"));
 </script>
 
 <h1>About</h1>

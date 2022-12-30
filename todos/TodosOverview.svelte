@@ -3,8 +3,8 @@
   import z from "zod";
 
   export const todosSearchParamsSchema = z.object({
-    page: z.number(),
-    offset: z.number().max(10),
+    page: z.number().optional(),
+    offset: z.number().max(10).optional(),
   });
 
   type TodosSearchParams = z.infer<typeof todosSearchParamsSchema>;
@@ -17,8 +17,11 @@
     const todos = (await rawTodos.json()) as unknown as Todo[];
 
     const { page, offset } = searchParams;
-    const startIndex = (page - 1) * offset;
-    const endIndex = page * offset - 1;
+
+    const definedPage = page ?? 1;
+    const definedOffset = offset ?? 10;
+    const startIndex = (definedPage - 1) * definedOffset;
+    const endIndex = definedPage * definedOffset - 1;
     return todos.filter((_, index) => index >= startIndex && index <= endIndex);
   }
 </script>
@@ -42,11 +45,15 @@
 </ul>
 
 <a
-  href={`/todos/?page=${searchParams.page - 1}&offset=${searchParams.offset}`}
+  href={`/todos/?page=${(searchParams.page ?? 1) - 1}&offset=${
+    searchParams.offset ?? 10
+  }`}
   use:link>Previous</a
 >
 
 <a
-  href={`/todos/?page=${searchParams.page + 1}&offset=${searchParams.offset}`}
+  href={`/todos/?page=${(searchParams.page ?? 1) + 1}&offset=${
+    searchParams.offset ?? 10
+  }`}
   use:link>Next</a
 >

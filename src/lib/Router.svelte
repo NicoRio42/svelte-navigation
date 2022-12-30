@@ -134,6 +134,7 @@
   let data: unknown;
   let pathParams: PathParams;
   let searchParams: SearchParams;
+  let error: unknown;
 
   const routePatterns: RoutesPatterns = Object.entries(routes).map(
     ([path, route]) => {
@@ -239,7 +240,12 @@
 
     try {
       if (conditions !== undefined) {
-        const conditionsResult = await checkConditions(conditions);
+        const conditionsResult = await checkConditions(
+          conditions,
+          loc,
+          pathParams,
+          searchParams
+        );
 
         if (typeof conditionsResult !== "boolean") {
           displayedLoadingComponent = null;
@@ -270,8 +276,9 @@
       handleScroll(loc.hash);
       dispatch("navigationFinish");
       return;
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error(e);
+      error = e;
       displayedLoadingComponent = null;
 
       if (matchedErrorComponent !== undefined)
@@ -286,7 +293,7 @@
 </script>
 
 {#if displayedErrorComponent}
-  <svelte:component this={displayedErrorComponent} />
+  <svelte:component this={displayedErrorComponent} {error} />
 {:else if displayedLoadingComponent}
   <svelte:component this={displayedLoadingComponent} />
 {:else}

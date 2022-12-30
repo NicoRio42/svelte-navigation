@@ -1,5 +1,6 @@
 import type { LoadData } from "./load";
 import type z from "zod";
+import type { PathParams, SearchParams } from "./params";
 
 export type Route = ConstructorOfATypedSvelteComponent | SyncRoute | AsyncRoute;
 
@@ -35,9 +36,16 @@ export type NavigationParams = {
 };
 
 export type RoutePreCondition =
-  | (() => boolean | NavigationParams)
-  | (() => Promise<boolean | NavigationParams>);
+  | ((options?: RoutePreConditionOptions) => boolean | NavigationParams)
+  | ((
+      options?: RoutePreConditionOptions
+    ) => Promise<boolean | NavigationParams>);
 
+type RoutePreConditionOptions = {
+  location?: RouterLocation;
+  pathParams?: PathParams;
+  searchParams?: SearchParams;
+};
 export type Routes = Record<string, Route>;
 
 export type PathMatcher = { pattern: RegExp; keys: string[] };
