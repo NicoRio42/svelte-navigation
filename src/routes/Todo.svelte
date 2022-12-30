@@ -1,9 +1,9 @@
 <script lang="ts" context="module">
-  import type { Params } from "../lib/models/params";
+  import type { PathParams } from "../lib/models/params";
 
-  export async function loadData(params?: Params): Promise<Todo> {
+  export async function loadData(pathParams: PathParams): Promise<Todo> {
     const todo = await fetch(
-      `https://jsonplaceholder.typicode.com/todos/${params?.todoId}`
+      `https://jsonplaceholder.typicode.com/todos/${pathParams.todoId}`
     );
     return (await todo.json()) as Todo;
   }
