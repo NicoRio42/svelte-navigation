@@ -268,6 +268,10 @@
       const { default: matchedComponent, loadData } = await asyncComponent();
 
       if (loadData === undefined) {
+        // Cancelling if another navigation has been triggered
+        if (currentNavigationSymbol !== currentNavigationSymbolReference.get())
+          return;
+
         component = matchedComponent;
         handleScroll(loc.hash);
         dispatch("navigationFinish");
@@ -289,6 +293,10 @@
       dispatch("navigationFinish");
       return;
     } catch (e) {
+      // Cancelling if another navigation has been triggered
+      if (currentNavigationSymbol !== currentNavigationSymbolReference.get())
+        return;
+
       console.error(e);
       error = e;
       displayedLoadingComponent = null;
