@@ -13,11 +13,18 @@
 - [ ] tests
 - [ ] fallback route
 - [ ] documentation
-- [x] global loading and error component -->
+- [x] global loading and error component
+
+TODO
+- Simple async component
+- Error router event
+- Router events data
+
+ -->
 
 # Svelte navigation
 
-A data loading friendly, type safe, config based router for Svelte.
+A "data-loading friendly", type safe, config based router for Svelte. Inspired by [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router/blob/master/Router.svelte).
 
 ## Installation
 
@@ -50,3 +57,27 @@ npm install svelte-navigation
 
 <Router {routes}/>
 ```
+
+## Routing
+
+### Basic routing
+
+### Async routes
+
+### Pre-conditions
+
+### Data loading
+
+### Type safety
+
+### Loading component
+
+### Error component
+
+### Router events
+
+## Navigation
+
+### Links
+
+### Programatic navigation
