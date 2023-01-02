@@ -183,11 +183,89 @@ const routes: Routes = {
 };
 ```
 
+The loadData function can take an optionnal object as parameter that can contain the location object, the path parameters and the search parameters.
+
 ### Type safety
+
+You can provide a zod schema to ensure type-safety on path params and search params.
+
+```js
+import Posts, { loadData } from "About.svelte";
+import z from "zod";
+
+const pathParamsSchema = z.object({
+  locale: z.enum(["en", "fr", "es"]),
+});
+
+const seachParamsSchema = z.object({
+  from: z.string().datetime(),
+  to: z.string().datetime().optional(),
+});
+
+const routes: Routes = {
+  "/": Home,
+  "/:locale/posts/": {
+    component: () => Posts,
+    loadData,
+    pathParamsSchema,
+    seachParamsSchema,
+  },
+};
+```
+
+Zod schemas will be used during matching phase of the navigation. If params parsing fails, the router won't match the route and will try next routes.
 
 ### Loading component
 
+You can provide a loading component for a specifique route, or for the whole router. It will be displayed durring the lazy-loading, during the execution of preconditions and during data loading.
+
+```svelte
+<script lang="ts">
+    const routes = {
+        "/": Home,
+        // Will display Loading.svelte during loading
+        "/about": {
+          asyncComponent: () => import("./About.svelte"),
+          loadingComponent: Loading
+        },
+        // With display GlobalLoading.svelte during loading
+        "/posts/:slug": {
+          component: Post,
+          loadData,
+        },
+    }
+</script>
+
+<Router {routes} loadingComponent={GlobalLoading}/>
+```
+
+Location, path params and search params are passed to the loading component just like for route's components.
+
 ### Error component
+
+Just like loading components, you can provide a error component for a specifique route, or for the whole router. It will be displayed if an exception is thrown during navigation.
+
+```svelte
+<script lang="ts">
+    const routes = {
+        "/": Home,
+        // Will display Error.svelte if an exception is thrown during navigation
+        "/about": {
+          asyncComponent: () => import("./About.svelte"),
+          errorComponent: Error
+        },
+        // Witl display GlobalError.svelte if an exception is thrown during navigation
+        "/posts/:slug": {
+          component: Post,
+          loadData,
+        },
+    }
+</script>
+
+<Router {routes} loadingComponent={GlobalError}/>
+```
+
+Location, path params and search params are passed to the loading component just like for route's components.
 
 ### Router events
 
@@ -195,4 +273,16 @@ const routes: Routes = {
 
 ### Links
 
+The `link` action should be add to `<a>` elements to trigger a client side navigation. We use raw html elements because it is easier for styling than a framework specific component.
+
+```svelte
+<script lang="ts">
+  import { link } from "svelte-navigation/Router.svelte"
+</script>
+
+<a href="/about" use:link>A client side link</a>
+```
+
 ### Programatic navigation
+
+`back`, `forward`, `push` and `replace` can be used to programmatically navigate. `push` and `replace` functions take a location string as argument.
