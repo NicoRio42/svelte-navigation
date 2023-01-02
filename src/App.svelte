@@ -4,6 +4,7 @@
   import Router, { back, forward, link } from "./lib/Router.svelte";
   import About from "./routes/About.svelte";
   import Error from "./routes/Error.svelte";
+  import Fallback from "./routes/Fallback.svelte";
   import GlobalError from "./routes/GlobalError.svelte";
   import GlobalLoading from "./routes/GlobalLoading.svelte";
   import Home from "./routes/Home.svelte";
@@ -28,13 +29,6 @@
     "/posts/:id": {
       asyncComponent: () => import("./routes/Post.svelte"),
       loadingComponent: Loading,
-      conditions: [
-        () => true,
-        async () => {
-          await wait(1500);
-          return { path: "/login" };
-        },
-      ],
     },
     "/users": {
       asyncComponent: () => import("./routes/UsersOverview.svelte"),
@@ -54,6 +48,7 @@
     "/pictures": {
       asyncComponent: () => import("./routes/Pictures.svelte"),
     },
+    "*": Fallback,
   };
 </script>
 

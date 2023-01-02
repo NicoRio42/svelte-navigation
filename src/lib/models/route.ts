@@ -1,4 +1,3 @@
-import type { LoadData } from "./load";
 import type z from "zod";
 import type { PathParams, SearchParams } from "./params";
 
@@ -30,22 +29,18 @@ export type RouterLocation = {
   hash: string;
 };
 
-export type NavigationParams = {
-  path: string;
-  options?: { queryParams?: Record<string, string>; hash?: string };
-};
-
 export type RoutePreCondition =
-  | ((options?: RoutePreConditionOptions) => boolean | NavigationParams)
-  | ((
-      options?: RoutePreConditionOptions
-    ) => Promise<boolean | NavigationParams>);
+  | ((options?: NavigationInformations) => boolean | string)
+  | ((options?: NavigationInformations) => Promise<boolean | string>);
 
-type RoutePreConditionOptions = {
+export type NavigationInformations = {
   location?: RouterLocation;
   pathParams?: PathParams;
   searchParams?: SearchParams;
 };
+
+export type LoadData = (options?: NavigationInformations) => Promise<any>;
+
 export type Routes = Record<string, Route>;
 
 export type PathMatcher = { pattern: RegExp; keys: string[] };
@@ -63,11 +58,4 @@ export function isSyncRoute(route: Route): route is SyncRoute {
 export function isAsyncRoute(route: Route): route is AsyncRoute {
   // @ts-ignore
   return route["asyncComponent"] !== undefined;
-}
-
-export function isNavigationParams(
-  params: Promise<boolean | NavigationParams> | NavigationParams
-): params is NavigationParams {
-  // @ts-ignore
-  return params["path"] !== undefined;
 }

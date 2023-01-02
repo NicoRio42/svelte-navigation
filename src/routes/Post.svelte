@@ -1,9 +1,11 @@
 <script lang="ts" context="module">
   import type { PathParams } from "../lib/models/params";
 
-  export async function loadData(pathParams: PathParams): Promise<Post> {
+  export async function loadData(options: {
+    pathParams?: PathParams;
+  }): Promise<Post> {
     const post = await fetch(
-      `https://jsonplaceholder.typicode.com/posts/${pathParams.id}`
+      `https://jsonplaceholder.typicode.com/posts/${options.pathParams.id}`
     );
     return (await post.json()) as unknown as Post;
   }

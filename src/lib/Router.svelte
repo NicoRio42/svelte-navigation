@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
   import { writable } from "svelte/store";
-  import { handleScroll, searchParamsToString } from "./router.helpers";
+  import { handleScroll } from "./router.helpers";
 
   const currentNavigationSymbolReference = createReference<Symbol>(Symbol());
 
@@ -18,18 +18,14 @@
     });
   });
 
-  export function push(
-    path: string,
-    options?: { queryParams?: Record<string, string>; hash?: string }
-  ) {
-    navigate("push", path, options);
+  export function push(locationString: string) {
+    setLocationFromString(locationString);
+    window.history.pushState({}, "", locationString);
   }
 
-  export function replace(
-    path: string,
-    options?: { queryParams?: Record<string, string>; hash?: string }
-  ) {
-    navigate("replace", path, options);
+  export function replace(locationString: string) {
+    setLocationFromString(locationString);
+    window.history.replaceState({}, "", locationString);
   }
 
   export function back() {
@@ -40,34 +36,9 @@
     window.history.forward();
   }
 
-  function navigate(
-    mode: "push" | "replace",
-    path: string,
-    options?: { queryParams?: Record<string, string>; hash?: string }
-  ) {
-    const search =
-      options?.queryParams === undefined
-        ? ""
-        : searchParamsToString(options.queryParams);
-
-    const hash =
-      options?.hash === undefined || options?.hash === ""
-        ? ""
-        : `#${options.hash}`;
-
-    location.set({
-      path,
-      search,
-      hash,
-    });
-
-    let uri = path + search + hash;
-
-    if (mode === "push") {
-      window.history.pushState({}, "", uri);
-    } else {
-      window.history.replaceState({}, "", uri);
-    }
+  function setLocationFromString(locationString: string) {
+    const url = new URL(window.location.origin + locationString);
+    location.set({ path: url.pathname, search: url.search, hash: url.hash });
   }
 
   function handleClick(event: MouseEvent) {
@@ -97,8 +68,10 @@
 
 <script lang="ts">
   import { parse } from "regexparam";
-  import { getContext, setContext } from "svelte";
+  import { createEventDispatcher, getContext, setContext } from "svelte";
+  import type { z } from "zod";
   import { checkConditions } from "./conditions.js";
+  import type { PathParams, SearchParams } from "./models/params";
   import {
     isAsyncRoute,
     isSyncRoute,
@@ -114,8 +87,6 @@
     createAsyncRouteFromSyncRoute,
     extractSearchParamsFromSearchSting,
   } from "./router.helpers.js";
-  import { createEventDispatcher } from "svelte";
-  import type { PathParams, SearchParams } from "./models/params";
 
   export let routes: Routes;
   export let loadingComponent: ConstructorOfATypedSvelteComponent | null = null;
@@ -204,32 +175,14 @@
       seachParamsSchema,
     } = asyncRoute;
 
-    let parsedPathParams: PathParams;
-
-    if (pathParamsSchema !== undefined) {
-      try {
-        parsedPathParams = pathParamsSchema.parse(rawPathParams);
-      } catch (e) {
-        return;
-      }
-    } else {
-      parsedPathParams = rawPathParams;
-    }
+    const parsedPathParams = parseParams(rawPathParams, pathParamsSchema);
+    if (parsedPathParams === null) return;
 
     if (!areSuperficialyEqual(pathParams, parsedPathParams))
       pathParams = parsedPathParams;
 
-    let parsedSearchParams: SearchParams;
-
-    if (seachParamsSchema !== undefined) {
-      try {
-        parsedSearchParams = seachParamsSchema.parse(rawSearchParams);
-      } catch (e) {
-        return;
-      }
-    } else {
-      parsedSearchParams = rawSearchParams;
-    }
+    const parsedSearchParams = parseParams(rawSearchParams, seachParamsSchema);
+    if (parsedSearchParams === null) return;
 
     if (!areSuperficialyEqual(searchParams, parsedSearchParams))
       searchParams = parsedSearchParams;
@@ -254,7 +207,7 @@
 
         if (typeof conditionsResult !== "boolean") {
           displayedLoadingComponent = null;
-          replace(conditionsResult.path, conditionsResult.options);
+          replace(conditionsResult);
           dispatch("navigationFinish");
           return;
         }
@@ -278,7 +231,11 @@
         return;
       }
 
-      const currentNavigationData = await loadData(pathParams, searchParams);
+      const currentNavigationData = await loadData({
+        location: loc,
+        pathParams,
+        searchParams,
+      });
 
       // Cancelling if another navigation has been triggered
       if (currentNavigationSymbol !== currentNavigationSymbolReference.get())
@@ -309,6 +266,25 @@
       dispatch("navigationFinish");
       return;
     }
+  }
+
+  function parseParams<T extends PathParams | SearchParams>(
+    rawParams: T,
+    paramsSchema: z.SomeZodObject | undefined
+  ): T | null {
+    let parsedParams: T;
+
+    if (paramsSchema !== undefined) {
+      try {
+        parsedParams = paramsSchema.parse(rawParams);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      parsedParams = rawParams;
+    }
+
+    return parsedParams;
   }
 </script>
 
